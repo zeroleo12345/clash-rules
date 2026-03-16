@@ -28,23 +28,22 @@ jobs:
           
           mkdir -p public
           
-          limit=5000
+          limit=50000
           
           for file in "${files[@]}"; do          
               lines=$(wc -l < "$file")
           
-              # 不超过5000行，保持原样
-              if [ "$lines" -le 5000 ]; then
-                  cp "$f" "public/$f"
+              if [ "$lines" -le ${limit} ]; then
+                  cp "$file" "public/$file"
               else
-                  base=${f%.txt}
+                  base=${file%.txt}
           
                   awk -v base="$base" '
                   {
                       file = sprintf("public/%s%d.txt", base, int((NR-1)/5000)+1)
                       print >> file
                   }
-                  ' "$f"
+                  ' "$file"
               fi
           done
 
