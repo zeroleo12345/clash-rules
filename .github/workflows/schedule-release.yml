@@ -48,7 +48,7 @@ jobs:
 
       - name: Git push assets to "cloudflare" branch
         run: |
-          cd public || exit 1
+          # cd public || exit 1   # 只推送public目录
           git_branch="cloudflare"
           git init
           git config --local user.name "github-actions[bot]"
