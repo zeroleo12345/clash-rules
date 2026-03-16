@@ -1,0 +1,60 @@
+name: daily-release
+
+on:
+  schedule:
+    - cron: '0 18 * * *'   # UTC
+  workflow_dispatch:     # 支持手动触发（方便测试）
+
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1    # 1: Default; 0: indicates all branches and tags
+          repository: Loyalsoldier/clash-rules
+          ref: release
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+
+      - name: Generate rule-provider files
+        run: |
+          files=(
+            apple.txt cncidr.txt gfw.txt greatfire.txt lancidr.txt proxy.txt telegramcidr.txt
+            applications.txt direct.txt google.txt icloud.txt private.txt reject.txt tld-not-cn.txt
+          )
+          
+          mkdir -p public
+          
+          limit=50000
+          
+          for file in "${files[@]}"; do          
+              lines=$(wc -l < "$file")
+          
+              if [ "$lines" -le ${limit} ]; then
+                  cp "$file" "public/$file"
+              else
+                  base=${file%.txt}
+          
+                  awk -v base="$base" -v limit="$limit" '{
+                      file = sprintf("public/%s%d.txt", base, int((NR-1)/limit)+1)
+                      print >> file
+                  }' "$file"
+              fi
+          done
+
+      - name: Git push assets to "cloudflare" branch
+        run: |
+          cd publish || exit 1
+          git_branch="cloudflare"
+          git init
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b ${git_branch}
+          git add .
+          git commit -m "Github Action daily release"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f origin ${git_branch}
