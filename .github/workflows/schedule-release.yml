@@ -50,10 +50,11 @@ jobs:
         run: |
           cd public || exit 1
           git_branch="cloudflare"
+          git init
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b ${git_branch}
           git add .
           git commit -m "Github Action daily release"
           git remote add origin "https://${{ github.actor }}:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git push origin ${git_branch}
+          git push -f origin ${git_branch}
