@@ -16,8 +16,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1    # 1: Default; 0: indicates all branches and tags
-          repository: Loyalsoldier/clash-rules
-          ref: release
+          repository: zeroleo12345/clash-rules
+          ref: zlx
           token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 
       - name: Generate rule-provider files
@@ -30,19 +30,26 @@ jobs:
           mkdir -p public
           
           limit=50000
+          base_url="https://raw.githubusercontent.com/Loyalsoldier/clash-rules/refs/heads/release"
           
-          for file in "${files[@]}"; do          
-              lines=$(wc -l < "$file")
-          
+          for filename in "${files[@]}"; do
+              source_path="/tmp/${filename}"
+
+              # 下载文件
+              curl -sSL -o ${source_path} ${base_url}/${filename}
+
+              lines=$(wc -l < "$source_path")
+
               if [ "$lines" -le ${limit} ]; then
-                  cp "$file" "public/$file"
+                  target_path="public/${filename}"
+                  cp "$source_path" "$target_path"
               else
-                  base=${file%.txt}
-          
+                  base=${filename%.txt}
+
                   awk -v base="$base" -v limit="$limit" '{
-                      file = sprintf("public/%s%d.txt", base, int((NR-1)/limit)+1)
-                      print >> file
-                  }' "$file"
+                      target_path = sprintf("public/%s%d.txt", base, int((NR-1)/limit)+1)
+                      print >> target_path
+                  }' "$source_path"
               fi
           done
 
