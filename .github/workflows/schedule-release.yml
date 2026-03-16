@@ -38,12 +38,10 @@ jobs:
               else
                   base=${file%.txt}
           
-                  awk -v base="$base" '
-                  {
-                      file = sprintf("public/%s%d.txt", base, int((NR-1)/5000)+1)
+                  awk -v base="$base" -v limit="$limit" '{
+                      file = sprintf("public/%s%d.txt", base, int((NR-1)/limit)+1)
                       print >> file
-                  }
-                  ' "$file"
+                  }' "$file"
               fi
           done
 
