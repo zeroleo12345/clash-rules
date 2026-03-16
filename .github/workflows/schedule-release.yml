@@ -50,7 +50,7 @@ jobs:
         run: |
           # cd public || exit 1   # 只推送public目录
           git_branch="cloudflare"
-          git init
+          rm -rf .git/ && git init
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b ${git_branch}
