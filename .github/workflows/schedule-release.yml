@@ -18,6 +18,7 @@ jobs:
           fetch-depth: 1    # 1: Default; 0: indicates all branches and tags
           repository: Loyalsoldier/clash-rules
           ref: release
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 
       - name: Generate rule-provider files
         run: |
@@ -46,8 +47,6 @@ jobs:
           done
 
       - name: Git push assets to "cloudflare" branch
-        with:
-          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
         run: |
           cd publish || exit 1
           git_branch="cloudflare"
