@@ -55,6 +55,7 @@ jobs:
                   /tmp/mihomo convert-ruleset ipcidr yaml "${source_path}" "./public/${filename_no_dot}.mrs"
               elif [[ "$filename" == "applications.txt" ]]; then
                   type="classical"
+                  # convert panic: runtime error: invalid memory address or nil pointer dereference
               else
                   /tmp/mihomo convert-ruleset domain yaml "${source_path}" "./public/${filename_no_dot}.mrs"
               fi
