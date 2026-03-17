@@ -20,7 +20,15 @@ jobs:
           ref: zlx
           token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 
-      - name: Generate rule-provider files
+      - name: Download and unzip `mihomo`
+        run: |
+          mihomo_version=$(curl -fsSL https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt)
+
+          wget "https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-amd64-v3-${mihomo_version}.gz" -O - | gzip -d > /tmp/mihomo
+
+          chmod +x /tmp/mihomo
+
+      - name: Generate rule-provider
         run: |
           files=(
             apple.txt cncidr.txt gfw.txt greatfire.txt lancidr.txt proxy.txt telegramcidr.txt
@@ -29,7 +37,6 @@ jobs:
           
           mkdir -p public
           
-          limit=200000
           base_url="https://raw.githubusercontent.com/Loyalsoldier/clash-rules/refs/heads/release"
           
           for filename in "${files[@]}"; do
@@ -40,17 +47,19 @@ jobs:
 
               lines=$(wc -l < "$source_path")
 
-              if [ "$lines" -le ${limit} ]; then
-                  target_path="public/${filename}"
-                  cp "$source_path" "$target_path"
-              else
-                  base=${filename%.txt}
+              cp "$source_path" "./public/${filename}"
+              filename_no_dot=${filename%.*}
+              /tmp/mihomo convert-ruleset domain text "${filename}" "./public/${filename_no_dot}.mrs"
 
-                  awk -v base="$base" -v limit="$limit" '{
-                      target_path = sprintf("public/%s%d.txt", base, int((NR-1)/limit)+1)
-                      print >> target_path
-                  }' "$source_path"
-              fi
+              # 目前最多 10+万
+              # limit=2000000
+              # if [ "$lines" -ge ${limit} ]; then
+
+              #     awk -v filename_no_dot="$filename_no_dot" -v limit="$limit" '{
+              #         target_path = sprintf("public/%s%d.txt", filename_no_dot, int((NR-1)/limit)+1)
+              #         print >> target_path
+              #     }' "$source_path"
+              # fi
           done
 
       - name: Git push assets to "cloudflare" branch
