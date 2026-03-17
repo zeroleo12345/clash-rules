@@ -30,6 +30,8 @@ jobs:
 
       - name: Generate rule-provider
         run: |
+          base_url="https://raw.githubusercontent.com/Loyalsoldier/clash-rules/refs/heads/release"
+
           files=(
             apple.txt cncidr.txt gfw.txt greatfire.txt lancidr.txt proxy.txt telegramcidr.txt
             applications.txt direct.txt google.txt icloud.txt private.txt reject.txt tld-not-cn.txt
@@ -37,13 +39,12 @@ jobs:
           
           mkdir -p public
           
-          base_url="https://raw.githubusercontent.com/Loyalsoldier/clash-rules/refs/heads/release"
-          
           for filename in "${files[@]}"; do
               source_path="/tmp/${filename}"
 
               # 下载文件
-              curl -sSL -o ${source_path} ${base_url}/${filename}
+              curl -sSL -o ${source_path} ${base_url}/${filename} || exit 1
+              ls -al ${source_path}
 
               lines=$(wc -l < "$source_path")
 
