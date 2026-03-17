@@ -48,9 +48,9 @@ jobs:
 
               lines=$(wc -l < "$source_path")
 
-              cp "$source_path" "./public/${filename}"
+              cp "${source_path}" "./public/${filename}"
               filename_no_dot=${filename%.*}
-              /tmp/mihomo convert-ruleset domain text "${filename}" "./public/${filename_no_dot}.mrs"
+              /tmp/mihomo convert-ruleset domain text "${source_path}" "./public/${filename_no_dot}.mrs"
 
               # 目前最多 10+万
               # limit=2000000
