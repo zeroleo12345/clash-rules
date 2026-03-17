@@ -58,7 +58,8 @@ jobs:
               else
                   type="domain"
               fi
-              /tmp/mihomo convert-ruleset ${type} yaml "${source_path}" "./public/${filename_no_dot}.mrs"
+              yq -r '.payload[]' "${source_path}" >  "/tmp/${filename}.text"
+              /tmp/mihomo convert-ruleset ${type} text "/tmp/${filename}.text" "./public/${filename_no_dot}.mrs"
 
               # 目前最多 10+万
               # limit=2000000
