@@ -50,11 +50,15 @@ jobs:
 
               cp "${source_path}" "./public/${filename}"
               filename_no_dot=${filename%.*}
+
               if [[ "$filename" == *cidr* ]]; then
-                  /tmp/mihomo convert-ruleset ipcidr text "${source_path}" "./public/${filename_no_dot}.mrs"
+                  type="ipcidr"
+              elif [[ "$filename" == "applications.txt" ]]; then
+                  type="classical"
               else
-                  /tmp/mihomo convert-ruleset domain text "${source_path}" "./public/${filename_no_dot}.mrs"
+                  type="domain"
               fi
+              /tmp/mihomo convert-ruleset ${type} text "${source_path}" "./public/${filename_no_dot}.mrs"
 
               # 目前最多 10+万
               # limit=2000000
