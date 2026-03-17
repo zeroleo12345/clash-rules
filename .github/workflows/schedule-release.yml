@@ -52,14 +52,12 @@ jobs:
               filename_no_dot=${filename%.*}
 
               if [[ "$filename" == *cidr* ]]; then
-                  type="ipcidr"
+                  /tmp/mihomo convert-ruleset ipcidr yaml "${source_path}" "./public/${filename_no_dot}.mrs"
               elif [[ "$filename" == "applications.txt" ]]; then
                   type="classical"
               else
-                  type="domain"
+                  /tmp/mihomo convert-ruleset domain yaml "${source_path}" "./public/${filename_no_dot}.mrs"
               fi
-              yq -r '.payload[]' "${source_path}" >  "/tmp/${filename}.text"
-              /tmp/mihomo convert-ruleset ${type} text "/tmp/${filename}.text" "./public/${filename_no_dot}.mrs"
 
               # 目前最多 10+万
               # limit=2000000
