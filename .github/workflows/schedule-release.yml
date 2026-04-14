@@ -22,10 +22,10 @@ jobs:
 
       - name: Download and unzip `mihomo`
         run: |
-          mihomo_version=$(curl -fsSL https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt)
+          mihomo_version=v1.19.23
 
-          wget "https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-amd64-v3-${mihomo_version}.gz" -O - | gzip -d > /tmp/mihomo
-
+          wget "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.23/mihomo-linux-amd64-v3-${mihomo_version}.gz" -O - | gzip -d > /tmp/mihomo
+          
           chmod +x /tmp/mihomo
 
       - name: Generate rule-provider
