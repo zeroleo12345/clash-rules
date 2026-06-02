@@ -51,6 +51,7 @@ jobs:
               cp "${source_path}" "./public/${filename}"
               filename_no_dot=${filename%.*}
 
+              cp "${source_path}" "./public/${filename_no_dot}.yaml"
               if [[ "$filename" == *cidr* ]]; then
                   /tmp/mihomo convert-ruleset ipcidr yaml "${source_path}" "./public/${filename_no_dot}.mrs"
               elif [[ "$filename" == "applications.txt" ]]; then
@@ -74,6 +75,7 @@ jobs:
       - name: Git push assets to "cloudflare" branch
         run: |
           # cd public || exit 1   # 只推送public目录
+          # 推送到 cloudflare 分支，cloudflare侧会自动从Github同步
           git_branch="cloudflare"
           rm -rf .git/ && git init
           git config --local user.name "github-actions[bot]"
