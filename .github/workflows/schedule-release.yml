@@ -1,0 +1,87 @@
+name: daily-release
+
+on:
+  schedule:
+    - cron: '0 18 * * *'   # UTC
+  workflow_dispatch:     # 支持手动触发（方便测试）
+
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1    # 1: Default; 0: indicates all branches and tags
+          repository: zeroleo12345/clash-rules
+          ref: zlx
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+
+      - name: Download and unzip `mihomo`
+        run: |
+          mihomo_version=v1.19.23
+
+          wget "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.23/mihomo-linux-amd64-v3-${mihomo_version}.gz" -O - | gzip -d > /tmp/mihomo
+          
+          chmod +x /tmp/mihomo
+
+      - name: Generate rule-provider
+        run: |
+          base_url="https://raw.githubusercontent.com/Loyalsoldier/clash-rules/refs/heads/release"
+
+          files=(
+            apple.txt cncidr.txt gfw.txt greatfire.txt lancidr.txt proxy.txt telegramcidr.txt
+            applications.txt direct.txt google.txt icloud.txt private.txt reject.txt tld-not-cn.txt
+          )
+          
+          mkdir -p public
+          
+          for filename in "${files[@]}"; do
+              source_path="/tmp/${filename}"
+
+              # 下载文件
+              curl -sSL -o ${source_path} ${base_url}/${filename} || exit 1
+              ls -al ${source_path}
+
+              lines=$(wc -l < "$source_path")
+
+              cp "${source_path}" "./public/${filename}"
+              filename_no_dot=${filename%.*}
+
+              cp "${source_path}" "./public/${filename_no_dot}.yaml"
+              if [[ "$filename" == *cidr* ]]; then
+                  /tmp/mihomo convert-ruleset ipcidr yaml "${source_path}" "./public/${filename_no_dot}.mrs"
+              elif [[ "$filename" == "applications.txt" ]]; then
+                  type="classical"
+                  # convert panic: runtime error: invalid memory address or nil pointer dereference
+              else
+                  /tmp/mihomo convert-ruleset domain yaml "${source_path}" "./public/${filename_no_dot}.mrs"
+              fi
+
+              # 目前最多 10+万
+              # limit=2000000
+              # if [ "$lines" -ge ${limit} ]; then
+
+              #     awk -v filename_no_dot="$filename_no_dot" -v limit="$limit" '{
+              #         target_path = sprintf("public/%s%d.txt", filename_no_dot, int((NR-1)/limit)+1)
+              #         print >> target_path
+              #     }' "$source_path"
+              # fi
+          done
+
+      - name: Git push assets to "cloudflare" branch
+        run: |
+          # cd public || exit 1   # 只推送public目录
+          # 推送到 cloudflare 分支，cloudflare侧会自动从Github同步
+          git_branch="cloudflare"
+          rm -rf .git/ && git init
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b ${git_branch}
+          git add .
+          git commit -m "Github Action daily release"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f origin ${git_branch}
